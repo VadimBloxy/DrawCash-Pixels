@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DrawCash — Pixel Art Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Press+Start+2P&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#070712;font-family:'DM Mono',monospace;color:#fff;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+input,select,textarea{font-family:'DM Mono',monospace}
+input::placeholder,textarea::placeholder{color:#1e1e30}
+input:focus,textarea:focus,select:focus{outline:none}
+button{font-family:'DM Mono',monospace;cursor:pointer}
+
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes sq0{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-22px) rotate(45deg)}}
+@keyframes sq1{0%{transform:translateY(0)}100%{transform:translateY(-30px) rotate(90deg)}}
+@keyframes sq2{0%{transform:translateY(0)}100%{transform:translateY(-16px) rotate(180deg)}}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.6)}70%{transform:scale(.88)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-300% center}100%{background-position:300% center}}
+@keyframes neonPulse{0%,100%{box-shadow:0 0 6px var(--nc,#bf5fff),0 0 14px var(--nc,#bf5fff),0 0 26px var(--nc,#bf5fff)}50%{box-shadow:0 0 12px var(--nc,#bf5fff),0 0 28px var(--nc,#bf5fff),0 0 50px var(--nc,#bf5fff)}}
+@keyframes rainbowBorder{0%{border-color:#f00;box-shadow:0 0 14px #f006}16%{border-color:#f80}33%{border-color:#ff0}50%{border-color:#0f0;box-shadow:0 0 14px #0f06}66%{border-color:#08f}83%{border-color:#80f}100%{border-color:#f00}}
+@keyframes goldGlow{0%,100%{text-shadow:0 0 6px #ffd700,0 0 14px #ffd700aa}50%{text-shadow:0 0 14px #ffd700,0 0 28px #ffd700,0 0 42px #ff8c00}}
+@keyframes adminFlow{0%{color:#111;text-shadow:none}30%{color:#770000}60%{color:#dd0000;text-shadow:0 0 10px #ff000099,0 0 20px #ff000055}85%{color:#880000}100%{color:#111;text-shadow:none}}
+@keyframes goldAura{0%,100%{box-shadow:0 0 10px #ffd70055,0 4px 20px #ffd70033}50%{box-shadow:0 0 22px #ffd700aa,0 4px 32px #ffd70066,0 0 40px #ff8c0033}}
+@keyframes legendaryShimmer{0%{background-position:-400% center}100%{background-position:400% center}}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.gold-nick{animation:goldGlow 2s ease-in-out infinite;color:#ffd700!important}
+.admin-nick{animation:adminFlow 2.2s ease-in-out infinite;font-weight:900!important}
+.neon-card{--nc:#bf5fff;border-color:#bf5fff!important;animation:neonPulse 2.5s ease-in-out infinite}
+.rainbow-card{border-width:2px!important;animation:rainbowBorder 3s linear infinite}
+.gold-aura{animation:goldAura 2.5s ease-in-out infinite}
+.legendary-card{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(255,215,0,.09),rgba(255,107,53,.06),rgba(191,95,255,.09))!important}
+.legendary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ffd700,#ff6b35,#bf5fff,#ffd700,transparent);background-size:400%;animation:legendaryShimmer 3s linear infinite}
+.tab-btn{background:transparent;border:none;padding:10px 16px;color:#444;font-size:11px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Mono',monospace;white-space:nowrap}
+.tab-btn.active{color:#ff6b35;border-bottom-color:#ff6b35}
+.tab-btn:hover:not(.active){color:#777}
+.like-btn{transition:all .15s}
+.like-btn:active{transform:scale(.85)}
+.like-btn.popped{animation:heartPop .35s ease}
+.modal-in{animation:fadeIn .22s ease}
+.pixel-dot{position:fixed;width:6px;height:6px;pointer-events:none;border-radius:1px}
+.card-hover{transition:transform .2s,border-color .2s,box-shadow .2s}
+.card-hover:hover{transform:translateY(-4px)}
+.glow-btn{transition:all .2s}
+.glow-btn:hover{box-shadow:0 0 18px rgba(255,107,53,.4)}
+.inp{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:11px 14px;color:#fff;font-size:13px;width:100%;display:block;transition:border-color .2s}
+.inp:focus{border-color:rgba(255,107,53,.5)!important;box-shadow:0 0 0 2px rgba(255,107,53,.1)}
+.glass{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect,useCallback,useMemo}=React;
+
+/* ════════════════════════════════════════════════════════
+   DB — localStorage
+════════════════════════════════════════════════════════ */
+const DB={
+  getUsers()     {try{return JSON.parse(localStorage.getItem('dc:users')||'{}')}catch{return{}}},
+  saveUsers(u)   {try{localStorage.setItem('dc:users',JSON.stringify(u))}catch(e){console.error(e)}},
+  getDrawings()  {try{return JSON.parse(localStorage.getItem('dc:drawings')||'[]')}catch{return[]}},
+  saveDrawings(d){try{localStorage.setItem('dc:drawings',JSON.stringify(d))}catch(e){console.error(e)}},
+  getJams()      {try{return JSON.parse(localStorage.getItem('dc:jams')||'[]')}catch{return[]}},
+  saveJams(j)    {try{localStorage.setItem('dc:jams',JSON.stringify(j))}catch(e){console.error(e)}},
+  getUser(email) {return DB.getUsers()[email]||null},
+  updateUser(email,patch){
+    const u=DB.getUsers();if(!u[email])return null;
+    u[email]={...u[email],...patch};DB.saveUsers(u);return u[email];
+  },
+  ensureAdmin(){
+    const u=DB.getUsers();
+    const entry=Object.values(u).find(x=>x.nick===ADMIN_NICK);
+    if(entry&&!entry.isAdmin){
+      entry.isAdmin=true;entry.adminTitle=true;
+      if(!(entry.inventory||[]).includes('title_legend')){
+        entry.inventory=[...(entry.inventory||[]),'title_legend'];
+        entry.title='title_legend';
+      }
+      DB.saveUsers(u);
+    }
+  }
+};
+
+/* ════════════════════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════════════════════ */
+const ADMIN_NICK='werewolf228';
+const DEFAULT_WORK_LIMIT=10;
+
+/* ════════════════════════════════════════════════════════
+   PALETTES
+════════════════════════════════════════════════════════ */
+const PALETTES={
+  default:['#1a1a2e','#16213e','#0f3460','#533483','#e94560','#ff6b35','#f7c59f','#efefd0','#06d6a0','#ffd166','#118ab2','#73d2de','#ffffff','#cccccc','#888888','#000000'],
+  retro:  ['#000000','#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff','#800000','#008000','#000080','#808000','#800080','#008080','#c0c0c0','#808080'],
+  pastel: ['#ffb3ba','#ffdfba','#ffffba','#baffc9','#bae1ff','#f4bfff','#ffc8dd','#cdb4db','#a2d2ff','#bee5af','#ffeeba','#fdffb6','#caffbf','#9bf6ff','#a0c4ff','#ffffff'],
+  neon:   ['#ff003c','#ff6b35','#ffcc00','#00ff88','#00eeff','#7700ff','#ff00aa','#ffffff','#1a1a1a','#0d0d0d','#ff4d4d','#4dff91','#4dd9ff','#c14dff','#ff4db3','#ffff4d'],
+  earth:  ['#3d1c02','#7a3b1e','#c17f45','#e8b87a','#f2d9a2','#4a6741','#7a9e6e','#b5c99a','#e8ebe0','#2f4a6b','#5a7fa0','#8fb4c8','#c2dce8','#4a3728','#8b6914','#d4a843'],
+  ice:    ['#e8f4f8','#c8e6f0','#a0d4e8','#70bcd8','#4099c0','#1a6fa0','#0d4570','#082d50','#e0f8ff','#b0ecff','#70d8ff','#30beff','#0099cc','#006699','#003366','#001133'],
+  fire:   ['#fff5e0','#ffe0a0','#ffcc00','#ff9900','#ff6600','#ff3300','#cc0000','#990000','#660000','#330000','#ff8c42','#ff5722','#e64a19','#bf360c','#7f1f00','#ffd54f'],
+  matrix: ['#001100','#002200','#003300','#004400','#005500','#006600','#007700','#008800','#009900','#00aa00','#00bb00','#00cc00','#00dd00','#00ee00','#00ff00','#88ff88'],
+  def32:  ['#1a1a2e','#16213e','#0f3460','#533483','#e94560','#ff6b35','#f7c59f','#efefd0','#06d6a0','#ffd166','#118ab2','#73d2de','#ffffff','#cccccc','#888888','#000000','#ff6b6b','#ff8e53','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#222f3e','#576574','#8395a7','#c8d6e5','#dfe6e9','#fab1a0','#fdcb6e','#55efc4','#74b9ff'],
+  neon32: ['#ff003c','#ff6b35','#ffcc00','#00ff88','#00eeff','#7700ff','#ff00aa','#ffffff','#1a1a1a','#0d0d0d','#ff4d4d','#4dff91','#4dd9ff','#c14dff','#ff4db3','#ffff4d','#ff3864','#2de2e6','#f6019d','#023788','#650d89','#920075','#d40078','#fe75fe','#00c3ff','#ffff1c','#00ff9f','#ff6400','#ff0000','#aa00ff','#0044ff','#00ffcc'],
+  candy:  ['#ff6b9d','#ff9de2','#ffb3ba','#ffdfba','#ffffba','#baffc9','#bae1ff','#f4bfff','#ffc8dd','#ff85a1','#ffa07a','#98ff98','#87ceeb','#dda0dd','#f0e68c','#ffffff'],
+  ocean:  ['#001a33','#002b4d','#003d66','#004e80','#005f99','#007ab3','#0096cc','#00b2e6','#33c6f0','#66d4f4','#99e2f7','#cceefb','#e6f6ff','#ffffff','#a8d8ea','#2980b9'],
+  sunset: ['#1a0533','#3d0d5e','#7b1fa2','#ab47bc','#e040fb','#ff6090','#ff7043','#ff8f00','#ffb300','#ffd54f','#fff176','#ffffff','#ff5252','#ff1744','#d50000','#b71c1c'],
+  astral: ['#000005','#020010','#050025','#0a0040','#150060','#200080','#3000a0','#4400cc','#6600ff','#8833ff','#aa55ff','#cc88ff','#eeccff','#ffffff','#ff88ff','#ff44cc',
+           '#cc0088','#880055','#440022','#ff0066','#ff3399','#ff66bb','#ffccee','#00ffcc','#00ccaa','#008877','#004433','#00ff88','#33ffaa','#66ffcc','#99ffee','#ccfff5'],
+};
+
+/* ════════════════════════════════════════════════════════
+   SHOP ITEMS
+════════════════════════════════════════════════════════ */
+const TIER={
+  common:   {label:'Common',    bg:'rgba(255,255,255,.03)', border:'rgba(255,255,255,.08)', badge:'#888'},
+  rare:     {label:'Rare',      bg:'rgba(54,130,255,.07)',  border:'rgba(54,130,255,.25)',  badge:'#5599ff'},
+  epic:     {label:'Epic',      bg:'rgba(140,60,255,.08)',  border:'rgba(140,60,255,.3)',   badge:'#aa55ff'},
+  legendary:{label:'Legendary', bg:'rgba(255,200,0,.07)',   border:'rgba(255,200,0,.35)',   badge:'#ffd700'},
+  mythic:   {label:'Mythic',    bg:'rgba(255,0,120,.08)',   border:'rgba(255,0,120,.4)',    badge:'#ff0099'},
+};
+
+const SHOP_ITEMS=[
+  /* ── BADGES (16) ── */
+  {id:'badge_fire',     type:'badge',  tier:'common',    name:'Fire',            desc:'Fiery badge next to your name',         price:5,    emoji:'🔥'},
+  {id:'badge_star',     type:'badge',  tier:'common',    name:'Star',            desc:'Shining star badge',                    price:8,    emoji:'⭐'},
+  {id:'badge_heart',    type:'badge',  tier:'common',    name:'Heart',           desc:'Show some love',                        price:6,    emoji:'💖'},
+  {id:'badge_bolt',     type:'badge',  tier:'common',    name:'Lightning',       desc:'Speed demon badge',                     price:9,    emoji:'⚡'},
+  {id:'badge_crown',    type:'badge',  tier:'rare',      name:'Crown',           desc:'Royalty badge',                         price:20,   emoji:'👑'},
+  {id:'badge_alien',    type:'badge',  tier:'rare',      name:'Pixel Alien',     desc:'Out-of-this-world badge',               price:35,   emoji:'👾'},
+  {id:'badge_wolf',     type:'badge',  tier:'rare',      name:'Wolf',            desc:'Pack leader badge',                     price:30,   emoji:'🐺'},
+  {id:'badge_ghost',    type:'badge',  tier:'rare',      name:'Ghost',           desc:'Spooky rare badge',                     price:28,   emoji:'👻'},
+  {id:'badge_gem',      type:'badge',  tier:'epic',      name:'Diamond',         desc:'Priceless epic badge',                  price:60,   emoji:'💎'},
+  {id:'badge_dragon',   type:'badge',  tier:'epic',      name:'Dragon',          desc:'Epic dragon badge',                     price:75,   emoji:'🐉'},
+  {id:'badge_robot',    type:'badge',  tier:'epic',      name:'Robot',           desc:'Mechanical epic badge',                 price:65,   emoji:'🤖'},
+  {id:'badge_ninja',    type:'badge',  tier:'epic',      name:'Ninja',           desc:'Silent & deadly',                       price:80,   emoji:'🥷'},
+  {id:'badge_god',      type:'badge',  tier:'legendary', name:'Pixel God',       desc:'Legendary — for the chosen few',        price:200,  emoji:'⚡'},
+  {id:'badge_skull',    type:'badge',  tier:'legendary', name:'Skull King',      desc:'The ultimate legendary status',         price:250,  emoji:'💀'},
+  {id:'badge_phoenix',  type:'badge',  tier:'legendary', name:'Phoenix',         desc:'Rise from the ashes',                   price:220,  emoji:'🦅'},
+  {id:'badge_reaper',   type:'badge',  tier:'mythic',    name:'Grim Reaper',     desc:'Mythic-tier supremacy',                 price:600,  emoji:'💀'},
+
+  /* ── FRAMES (12) ── */
+  {id:'frame_silver',   type:'frame',  tier:'common',    name:'Silver',          desc:'Classic silver frame',                  price:15,   color:'#c0c0c0'},
+  {id:'frame_gold',     type:'frame',  tier:'common',    name:'Golden',          desc:'Gold frame around artworks',            price:20,   color:'#ffd700'},
+  {id:'frame_rose',     type:'frame',  tier:'common',    name:'Rose',            desc:'Soft rose gold frame',                  price:18,   color:'#ff9aa2'},
+  {id:'frame_neon',     type:'frame',  tier:'rare',      name:'Neon Purple',     desc:'Purple neon glow',                      price:30,   color:'#bf5fff'},
+  {id:'frame_fire',     type:'frame',  tier:'rare',      name:'Flame',           desc:'Burning fire frame',                    price:35,   color:'#ff6b35'},
+  {id:'frame_ocean',    type:'frame',  tier:'rare',      name:'Ocean',           desc:'Deep ocean blue glow',                  price:32,   color:'#0088ff'},
+  {id:'frame_ice',      type:'frame',  tier:'epic',      name:'Ice',             desc:'Frozen ice glow',                       price:45,   color:'#00d4ff'},
+  {id:'frame_matrix',   type:'frame',  tier:'epic',      name:'Matrix',          desc:'Cascading green code',                  price:55,   color:'#00ff44'},
+  {id:'frame_blood',    type:'frame',  tier:'epic',      name:'Blood Moon',      desc:'Deep crimson epic frame',               price:70,   color:'#cc0022'},
+  {id:'frame_rainbow',  type:'frame',  tier:'legendary', name:'Rainbow',         desc:'Animated full rainbow frame',           price:150,  color:'rainbow'},
+  {id:'frame_void',     type:'frame',  tier:'legendary', name:'Void',            desc:'Darkness and stars',                    price:180,  color:'#9d00ff'},
+  {id:'frame_plasma',   type:'frame',  tier:'mythic',    name:'Plasma Storm',    desc:'Unstable mythic energy frame',          price:450,  color:'#ff00ff'},
+
+  /* ── PALETTES (13) ── */
+  {id:'palette_retro',  type:'palette',tier:'common',    name:'Retro 16',        desc:'Classic 8-bit palette',                 price:10},
+  {id:'palette_pastel', type:'palette',tier:'common',    name:'Pastel 16',       desc:'Soft pastel tones',                     price:10},
+  {id:'palette_candy',  type:'palette',tier:'common',    name:'Candy 16',        desc:'Sweet candy colors',                    price:12},
+  {id:'palette_neon',   type:'palette',tier:'rare',      name:'Neon 16',         desc:'Acid neon colors',                      price:25},
+  {id:'palette_earth',  type:'palette',tier:'rare',      name:'Earth 16',        desc:'Natural earthy tones',                  price:20},
+  {id:'palette_ocean',  type:'palette',tier:'rare',      name:'Ocean 16',        desc:'Deep sea colors',                       price:22},
+  {id:'palette_ice',    type:'palette',tier:'epic',      name:'Ice 16',          desc:'Frosty cold palette',                   price:30},
+  {id:'palette_fire',   type:'palette',tier:'epic',      name:'Fire 16',         desc:'Hot burning palette',                   price:30},
+  {id:'palette_matrix', type:'palette',tier:'epic',      name:'Matrix 16',       desc:'100% green, maximum hacker',            price:35},
+  {id:'palette_sunset', type:'palette',tier:'epic',      name:'Sunset 16',       desc:'Warm dusk gradient colors',             price:40},
+  {id:'palette_def32',  type:'palette',tier:'rare',      name:'Default 32',      desc:'32 standard colors',                    price:20},
+  {id:'palette_neon32', type:'palette',tier:'legendary', name:'Neon 32',         desc:'32 acid neon colors',                   price:80},
+  {id:'palette_astral', type:'palette',tier:'mythic',    name:'Astral 64',       desc:'64 cosmic colors — maximum expression', price:300},
+
+  /* ── CANVAS SIZES (4) ── */
+  {id:'size_xl',        type:'canvas', tier:'rare',      name:'Canvas 64×64',    desc:'Twice the pixels',                      price:25},
+  {id:'size_xxl',       type:'canvas', tier:'epic',      name:'Canvas 96×96',    desc:'Massive canvas',                        price:60},
+  {id:'size_mega',      type:'canvas', tier:'legendary', name:'Canvas 128×128',  desc:'Mega canvas for masters',               price:150},
+  {id:'size_ultra',     type:'canvas', tier:'mythic',    name:'Canvas 256×256',  desc:'ULTRA canvas — insane detail',          price:500},
+
+  /* ── GALLERY ZOOM (4) ── */
+  {id:'zoom_xs',        type:'zoom',   tier:'common',    name:'Cards XS',        desc:'Tiny compact cards',                    price:5},
+  {id:'zoom_l',         type:'zoom',   tier:'common',    name:'Cards L',         desc:'Large comfortable cards',               price:5},
+  {id:'zoom_xl',        type:'zoom',   tier:'rare',      name:'Cards XL',        desc:'Extra large cards',                     price:15},
+  {id:'zoom_xxl',       type:'zoom',   tier:'epic',      name:'Cards XXL',       desc:'Cinema-sized cards',                    price:30},
+
+  /* ── PROFILE ACCESSORIES (new category) ── */
+  {id:'acc_sparkle',    type:'acc',    tier:'common',    name:'Sparkle Trail',   desc:'Tiny sparkles follow your cursor',      price:15},
+  {id:'acc_verified',   type:'acc',    tier:'rare',      name:'Verified Badge',  desc:'Blue verified checkmark ✓',            price:50,   emoji:'✅'},
+  {id:'acc_halo',       type:'acc',    tier:'rare',      name:'Halo',            desc:'Angel halo above avatar',               price:45,   emoji:'😇'},
+  {id:'acc_wings',      type:'acc',    tier:'epic',      name:'Angel Wings',     desc:'Glowing wings on profile card',         price:90,   emoji:'🕊️'},
+  {id:'acc_crown3d',    type:'acc',    tier:'legendary', name:'3D Crown',        desc:'Floating animated crown',               price:200,  emoji:'✨'},
+
+  /* ── VIP PERKS (10) ── */
+  {id:'vip_goldnick',   type:'vip',    tier:'legendary', name:'Gold Name',       desc:'Shimmering gold name everywhere',       price:300,  vipType:'goldnick'},
+  {id:'vip_neoncard',   type:'vip',    tier:'epic',      name:'Neon Glow',       desc:'Neon outline around your cards',        price:120,  vipType:'neoncard'},
+  {id:'vip_worklimit',  type:'vip',    tier:'rare',      name:'Work Limit ×3',   desc:'Publish up to 30 artworks',             price:45,   vipType:'worklimit'},
+  {id:'vip_doublecoin', type:'vip',    tier:'epic',      name:'Double Coins',    desc:'+2 coins per every 10 views',           price:100,  vipType:'doublecoin'},
+  {id:'vip_goldaura',   type:'vip',    tier:'legendary', name:'Gold Aura',       desc:'Animated gold shadow on your cards',    price:400,  vipType:'goldaura'},
+  {id:'vip_superlike',  type:'vip',    tier:'legendary', name:'Super Like',      desc:'Your like counts as 5',                 price:250,  vipType:'superlike'},
+  {id:'vip_pinned',     type:'vip',    tier:'mythic',    name:'Pinned Top',      desc:'Your artworks always appear first',     price:500,  vipType:'pinned'},
+  {id:'vip_anon',       type:'vip',    tier:'rare',      name:'Anonymous',       desc:'Hide email in your profile',            price:25,   vipType:'anon'},
+  {id:'vip_triple',     type:'vip',    tier:'mythic',    name:'Triple Coins',    desc:'+3 coins per 10 views instead of 1',   price:800,  vipType:'triplecoin'},
+  {id:'vip_spotlight',  type:'vip',    tier:'mythic',    name:'Spotlight',       desc:'Blinding light effect on your cards',  price:650,  vipType:'spotlight'},
+
+  /* ── TITLES (8) ── */
+  {id:'title_newbie',   type:'title',  tier:'common',    name:'Rookie',          desc:'Starting title',                        price:0,    titleColor:'#888'},
+  {id:'title_artist',   type:'title',  tier:'common',    name:'Artist',          desc:'Title displayed under your name',       price:50,   titleColor:'#06d6a0'},
+  {id:'title_scribbler',type:'title',  tier:'common',    name:'Scribbler',       desc:'Laid-back creative title',              price:30,   titleColor:'#aaaaaa'},
+  {id:'title_master',   type:'title',  tier:'rare',      name:'Pixel Master',    desc:'Master rank title',                     price:200,  titleColor:'#5599ff'},
+  {id:'title_veteran',  type:'title',  tier:'rare',      name:'Veteran',         desc:'Battle-hardened creator',               price:180,  titleColor:'#88aaff'},
+  {id:'title_legend',   type:'title',  tier:'legendary', name:'Legend',          desc:'VIP legendary title',                   price:1000, titleColor:'#ffd700'},
+  {id:'title_godcanvas',type:'title',  tier:'mythic',    name:'Canvas God',      desc:'Mythic title — bow down',               price:5000, titleColor:'#ff6b35'},
+  {id:'title_pixelmil', type:'title',  tier:'mythic',    name:'Pixel Millionaire',desc:'Only for the ultra-rich',             price:10000,titleColor:'#ff0099'},
+];
+
+/* ════════════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════════════ */
+function getUserById(id){
+  return Object.values(DB.getUsers()).find(u=>u.id===id)||null;
+}
+function getUserVip(user){
+  const inv=user.inventory||[];
+  return{
+    hasGoldNick:  inv.includes('vip_goldnick'),
+    hasNeonCard:  inv.includes('vip_neoncard'),
+    hasDoubleCoin:inv.includes('vip_doublecoin'),
+    hasGoldAura:  inv.includes('vip_goldaura'),
+    hasSuperLike: inv.includes('vip_superlike'),
+    hasPinned:    inv.includes('vip_pinned'),
+    workLimit:    inv.includes('vip_worklimit')?30:DEFAULT_WORK_LIMIT,
+    isAdmin:      user.nick===ADMIN_NICK||!!user.isAdmin,
+  };
+}
+
+/* ── NickDisplay ── */
+function NickDisplay({userId,nick,size=13}){
+  const u=useMemo(()=>userId?getUserById(userId):null,[userId]);
+  const vip=u?getUserVip(u):{};
+  const isAdmin=u?.nick===ADMIN_NICK||u?.isAdmin;
+  const badge=u?.badge?SHOP_ITEMS.find(i=>i.id===u.badge)?.emoji:null;
+  const accItem=u?.acc?SHOP_ITEMS.find(i=>i.id===u.acc):null;
+  const titleItem=u?.title?SHOP_ITEMS.find(i=>i.id===u.title):null;
+  return(
+    <span style={{display:'inline-flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
+      {badge&&<span style={{fontSize:size}}>{badge}</span>}
+      {accItem?.emoji&&<span style={{fontSize:size-1}}>{accItem.emoji}</span>}
+      {titleItem&&<span style={{fontSize:size-3,color:titleItem.titleColor||'#888',letterSpacing:.5,opacity:.9}}>[{titleItem.name}]</span>}
+      <span
+        className={isAdmin?'admin-nick':vip.hasGoldNick?'gold-nick':''}
+        style={{fontSize:size,fontWeight:700,color:isAdmin?'#ff2222':vip.hasGoldNick?'#ffd700':'#ddd'}}
+      >{nick||u?.nick||'???'}</span>
+    </span>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   PIXEL CANVAS
+════════════════════════════════════════════════════════ */
+function PixelCanvas({canvasSize=32,activePalette='default',extraFrameColor=null,onSave}){
+  const cols=canvasSize,rows=canvasSize;
+  const CELL=Math.max(3,Math.floor(Math.min(500,(window.innerWidth||900)-200)/cols));
+  const palette=PALETTES[activePalette]||PALETTES.default;
+  const [pixels,setPixels]=useState(()=>Array(rows*cols).fill('#1e1e2e'));
+  const [color,setColor]=useState('#ff6b35');
+  const [tool,setTool]=useState('pen');
+  const [history,setHistory]=useState([Array(rows*cols).fill('#1e1e2e')]);
+  const [hIdx,setHIdx]=useState(0);
+  const painting=useRef(false);
+  const lastPx=useRef(null);
+
+  const pushHistory=useCallback((px)=>{
+    setHistory(h=>{const t=h.slice(0,hIdx+1);const n=[...t,[...px]].slice(-30);setHIdx(n.length-1);return n;});
+  },[hIdx]);
+
+  const applyTool=useCallback((idx,cur)=>{
+    const n=[...cur];
+    if(tool==='pen'){n[idx]=color;return n}
+    if(tool==='eraser'){n[idx]='#1e1e2e';return n}
+    if(tool==='fill'){
+      const tgt=cur[idx];if(tgt===color)return cur;
+      const stk=[idx],vis=new Set();
+      while(stk.length){const i=stk.pop();if(i<0||i>=n.length||vis.has(i)||n[i]!==tgt)continue;vis.add(i);n[i]=color;const r=Math.floor(i/cols),c=i%cols;if(r>0)stk.push(i-cols);if(r<rows-1)stk.push(i+cols);if(c>0)stk.push(i-1);if(c<cols-1)stk.push(i+1)}
+    }
+    return n;
+  },[tool,color,cols,rows]);
+
+  const hMD=i=>{painting.current=true;setPixels(p=>{const n=applyTool(i,p);lastPx.current=n;return n})};
+  const hME=i=>{if(!painting.current||tool==='fill')return;setPixels(p=>{const n=applyTool(i,p);lastPx.current=n;return n})};
+  const hMU=()=>{if(painting.current&&lastPx.current)pushHistory(lastPx.current);painting.current=false};
+  const undo=()=>{if(hIdx<=0)return;const ni=hIdx-1;setHIdx(ni);setPixels([...history[ni]])};
+  const clear=()=>{const b=Array(rows*cols).fill('#1e1e2e');setPixels(b);pushHistory(b)};
+
+  const doSave=()=>{
+    const c=document.createElement('canvas');c.width=cols;c.height=rows;
+    const ctx=c.getContext('2d');pixels.forEach((px,i)=>{ctx.fillStyle=px;ctx.fillRect(i%cols,Math.floor(i/cols),1,1)});
+    const big=document.createElement('canvas');big.width=cols*8;big.height=rows*8;
+    const bx=big.getContext('2d');bx.imageSmoothingEnabled=false;bx.drawImage(c,0,0,big.width,big.height);
+    onSave(big.toDataURL());
+  };
+
+  const fStyle=extraFrameColor&&extraFrameColor!=='rainbow'
+    ?{border:`3px solid ${extraFrameColor}`,boxShadow:`0 0 24px ${extraFrameColor}66`}
+    :extraFrameColor==='rainbow'?{border:'3px solid #f00',animation:'rainbowBorder 3s linear infinite'}
+    :{border:'1px solid rgba(255,255,255,.1)'};
+
+  return(
+    <div style={{display:'flex',gap:16,alignItems:'flex-start',flexWrap:'wrap'}}>
+      <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',borderRadius:12,padding:11,display:'flex',flexDirection:'column',gap:8,alignItems:'center'}}>
+        {[['pen','✏️','Pencil'],['eraser','⬜','Eraser'],['fill','🪣','Fill']].map(([t,e,lb])=>(
+          <button key={t} title={lb} onClick={()=>setTool(t)}
+            style={{background:tool===t?'#ff6b35':'transparent',border:'1px solid '+(tool===t?'#ff6b35':'rgba(255,255,255,.1)'),borderRadius:8,padding:'9px 11px',fontSize:15,transition:'all .15s',lineHeight:1}}>
+            {e}
+          </button>
+        ))}
+        <div style={{height:1,width:'100%',background:'rgba(255,255,255,.07)'}}/>
+        <button onClick={undo} disabled={hIdx<=0} title="Undo"
+          style={{background:'transparent',border:'1px solid rgba(255,255,255,.09)',borderRadius:8,padding:'9px 11px',fontSize:14,opacity:hIdx>0?1:.3}}>↩️</button>
+        <button onClick={clear} title="Clear"
+          style={{background:'transparent',border:'1px solid rgba(255,70,70,.25)',borderRadius:8,padding:'9px 11px',fontSize:14}}>🗑️</button>
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div onMouseLeave={hMU} onMouseUp={hMU}
+          style={{display:'grid',gridTemplateColumns:`repeat(${cols},${CELL}px)`,width:cols*CELL,borderRadius:4,overflow:'hidden',
+            cursor:tool==='eraser'?'cell':tool==='fill'?'crosshair':'default',userSelect:'none',maxWidth:'100%',...fStyle}}>
+          {pixels.map((px,i)=>(
+            <div key={i} onMouseDown={()=>hMD(i)} onMouseEnter={()=>hME(i)}
+              style={{width:CELL,height:CELL,background:px,outline:CELL>=8?'0.5px solid rgba(255,255,255,.04)':'none',outlineOffset:-.5}}/>
+          ))}
+        </div>
+        <div style={{display:'flex',gap:5,marginTop:10,flexWrap:'wrap',maxWidth:cols*CELL}}>
+          {palette.map((c,i)=>(
+            <div key={i} onMouseDown={()=>{setColor(c);if(tool==='eraser')setTool('pen')}}
+              style={{width:22,height:22,borderRadius:3,background:c,border:color===c?'3px solid #fff':'1px solid rgba(255,255,255,.12)',cursor:'pointer',transform:color===c?'scale(1.25)':'scale(1)',transition:'transform .1s',flexShrink:0}}/>
+          ))}
+          <input type="color" value={color} onChange={e=>setColor(e.target.value)}
+            style={{width:22,height:22,borderRadius:3,border:'1px solid rgba(255,255,255,.15)',cursor:'pointer',padding:0,background:'transparent'}}/>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8}}>
+          <div style={{width:26,height:26,borderRadius:4,background:color,border:'2px solid rgba(255,255,255,.15)'}}/>
+          <span style={{color:'#444',fontSize:11,fontFamily:'monospace'}}>{color}</span>
+          <span style={{color:'#333',fontSize:11}}>· {cols}×{rows} · {palette.length} colors</span>
+        </div>
+        <button onClick={doSave} className="glow-btn"
+          style={{marginTop:12,background:'linear-gradient(135deg,#ff6b35,#f7931e)',border:'none',borderRadius:10,padding:'12px 30px',color:'#1a1a2e',fontWeight:800,fontSize:13,boxShadow:'0 4px 20px rgba(255,107,53,.4)'}}>
+          🚀 Publish
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   DRAW CARD
+════════════════════════════════════════════════════════ */
+function DrawCard({d,onView,currentUserId,cardSize='md',onDelete,showDelete}){
+  const fs={sm:10,md:12,lg:13,xl:14}[cardSize]||12;
+  const authorUser=useMemo(()=>getUserById(d.authorId),[d.authorId]);
+  const vip=authorUser?getUserVip(authorUser):{};
+  const frameItem=authorUser?.frame?SHOP_ITEMS.find(i=>i.id===authorUser.frame):null;
+  const fc=frameItem?.color;
+  const isRainbow=fc==='rainbow';
+  const liked=(d.likedBy||[]).includes(currentUserId);
+  const likeCount=(d.likedBy||[]).reduce((s,uid)=>{
+    const u=getUserById(uid);return s+(u&&(u.inventory||[]).includes('vip_superlike')?5:1);
+  },0);
+  const extraClass=vip.hasNeonCard?'neon-card':isRainbow?'rainbow-card':'';
+  const auraClass=vip.hasGoldAura?'gold-aura':'';
+
+  return(
+    <div onClick={()=>onView(d)} className={['card-hover',extraClass,auraClass].filter(Boolean).join(' ')}
+      style={{background:'rgba(255,255,255,.03)',border:'1px solid '+(fc&&!isRainbow?fc:'rgba(255,255,255,.07)'),
+        borderRadius:10,overflow:'hidden',cursor:'pointer',position:'relative',
+        boxShadow:fc&&!isRainbow&&!vip.hasNeonCard?`0 0 12px ${fc}44`:''}}>
+      <div style={{aspectRatio:'1',background:'#1a1a2e'}}>
+        <img src={d.data} alt={d.title} style={{width:'100%',height:'100%',objectFit:'cover',imageRendering:'pixelated',display:'block'}}/>
+      </div>
+      {liked&&<div style={{position:'absolute',top:6,right:showDelete?32:6,fontSize:12,filter:'drop-shadow(0 0 4px #e85d75)'}}>❤️</div>}
+      {showDelete&&(
+        <button onClick={e=>{e.stopPropagation();onDelete&&onDelete(d)}}
+          style={{position:'absolute',top:6,right:6,background:'rgba(180,20,20,.85)',border:'none',borderRadius:6,padding:'4px 7px',fontSize:12,color:'#fff',backdropFilter:'blur(4px)'}}>
+          🗑️
+        </button>
+      )}
+      <div style={{padding:'8px 10px'}}>
+        <div style={{fontWeight:700,fontSize:fs,color:'#ddd',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',marginBottom:3}}>{d.title}</div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <NickDisplay userId={d.authorId} nick={d.author} size={fs-1}/>
+          <div style={{display:'flex',gap:7,fontSize:fs-1}}>
+            <span style={{color:'#e85d75'}}>❤️ {likeCount}</span>
+            <span style={{color:'#ff6b35'}}>👁 {d.views}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   COMMENTS SECTION  (used inside ViewModal)
+════════════════════════════════════════════════════════ */
+function CommentSection({drawingId,currentUser}){
+  const [comments,setComments]=useState([]);
+  const [text,setText]=useState('');
+
+  const loadComments=()=>{
+    const all=DB.getDrawings();
+    const d=all.find(x=>x.id===drawingId);
+    setComments(d?.comments||[]);
+  };
+
+  useEffect(()=>{
+    loadComments();
+    const t=setInterval(loadComments,1500);
+    return()=>clearInterval(t);
+  },[drawingId]);
+
+  const handleSubmit=()=>{
+    const trimmed=text.trim();
+    if(!trimmed)return;
+    const all=DB.getDrawings();
+    const idx=all.findIndex(x=>x.id===drawingId);
+    if(idx===-1)return;
+    const comment={
+      id:'c_'+Date.now(),
+      userId:currentUser.id,
+      nick:currentUser.nick,
+      text:trimmed,
+      createdAt:Date.now(),
+    };
+    all[idx].comments=[...(all[idx].comments||[]),comment];
+    DB.saveDrawings(all);
+    setText('');
+    loadComments();
+  };
+
+  const handleDeleteComment=(cid)=>{
+    const isAdmin=currentUser.nick===ADMIN_NICK||currentUser.isAdmin;
+    const all=DB.getDrawings();
+    const idx=all.findIndex(x=>x.id===drawingId);
+    if(idx===-1)return;
+    const c=all[idx].comments?.find(x=>x.id===cid);
+    if(!c)return;
+    if(c.userId!==currentUser.id&&!isAdmin)return;
+    all[idx].comments=all[idx].comments.filter(x=>x.id!==cid);
+    DB.saveDrawings(all);
+    loadComments();
+  };
+
+  return(
+    <div>
+      {/* input */}
+      <div style={{display:'flex',gap:8,marginBottom:16}}>
+        <textarea value={text} onChange={e=>setText(e.target.value)}
+          placeholder="Write a comment..."
+          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSubmit()}}}
+          rows={2}
+          style={{flex:1,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:9,padding:'10px 13px',color:'#fff',fontSize:12,resize:'none',lineHeight:1.5}}/>
+        <button onClick={handleSubmit}
+          style={{background:'linear-gradient(135deg,#ff6b35,#f7931e)',border:'none',borderRadius:9,padding:'0 16px',color:'#1a1a2e',fontWeight:800,fontSize:13,alignSelf:'stretch',minWidth:60}}>
+          ↑
+        </button>
+      </div>
+      {/* list */}
+      {comments.length===0?(
+        <div style={{textAlign:'center',padding:'20px 0',color:'#222',fontSize:11}}>No comments yet</div>
+      ):(
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {comments.map(c=>{
+            const isOwn=c.userId===currentUser.id;
+            const isAdmin=currentUser.nick===ADMIN_NICK||currentUser.isAdmin;
+            const canDel=isOwn||isAdmin;
+            return(
+              <div key={c.id} style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:10,padding:'10px 13px',position:'relative'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:5}}>
+                  <NickDisplay userId={c.userId} nick={c.nick} size={11}/>
+                  <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                    <span style={{fontSize:10,color:'#333'}}>{new Date(c.createdAt).toLocaleString('en-US',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>
+                    {canDel&&(
+                      <button onClick={()=>handleDeleteComment(c.id)}
+                        style={{background:'transparent',border:'none',color:'#444',fontSize:12,padding:'0 2px',lineHeight:1}}
+                        title="Delete">✕</button>
+                    )}
+                  </div>
+                </div>
+                <div style={{fontSize:12,color:'#bbb',lineHeight:1.6,wordBreak:'break-word'}}>{c.text}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   VIEW MODAL
+════════════════════════════════════════════════════════ */
+function ViewModal({d,onClose,currentUser,onLike,onFavorite,onViewed}){
+  const [tab,setTab]=useState('info');
+  const [localD,setLocalD]=useState({...d,comments:d.comments||[]});
+  const didView=useRef(false);
+
+  useEffect(()=>{
+    if(!didView.current){
+      didView.current=true;
+      const updated=onViewed(d.id);
+      if(updated)setLocalD({...updated,comments:updated.comments||[]});
+    }
+    const t=setInterval(()=>{
+      const fresh=DB.getDrawings().find(x=>x.id===d.id);
+      if(fresh)setLocalD({...fresh,comments:fresh.comments||[]});
+    },700);
+    return()=>clearInterval(t);
+  },[]);
+
+  const authorUser=useMemo(()=>getUserById(localD.authorId),[localD.authorId]);
+  const fc=authorUser?.frame?SHOP_ITEMS.find(i=>i.id===authorUser.frame)?.color:null;
+  const isRainbow=fc==='rainbow';
+  const liked=(localD.likedBy||[]).includes(currentUser.id);
+  const isFav=(currentUser.favorites||[]).includes(localD.id);
+  const isOwn=localD.authorId===currentUser.id;
+  const likeCount=(localD.likedBy||[]).reduce((s,uid)=>{
+    const u=getUserById(uid);return s+(u&&(u.inventory||[]).includes('vip_superlike')?5:1);
+  },0);
+  const allUsers=DB.getUsers();
+  const likerList=(localD.likedBy||[]).map(uid=>{
+    const u=Object.values(allUsers).find(x=>x.id===uid);
+    return{uid,nick:u?.nick||uid,hasSuperLike:u&&(u.inventory||[]).includes('vip_superlike')};
+  });
+  const commentCount=(localD.comments||[]).length;
+
+  const handleLike=()=>{if(isOwn)return;const r=onLike(localD.id);if(r)setLocalD({...r,comments:r.comments||[]})};
+  const handleFav=()=>{onFavorite(localD.id);const f=DB.getDrawings().find(x=>x.id===localD.id);if(f)setLocalD({...f,comments:f.comments||[]})};
+
+  const imgBorder=isRainbow
+    ?{border:'4px solid #f00',borderRadius:8,overflow:'hidden',animation:'rainbowBorder 3s linear infinite'}
+    :fc?{border:`4px solid ${fc}`,borderRadius:8,overflow:'hidden',boxShadow:`0 0 32px ${fc}55`}
+    :{border:'1px solid rgba(255,255,255,.08)',borderRadius:8,overflow:'hidden'};
+
+  return(
+    <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:20,backdropFilter:'blur(18px)'}}>
+      <div className="modal-in" onClick={e=>e.stopPropagation()}
+        style={{background:'#0b0b18',border:'1px solid rgba(255,255,255,.1)',borderRadius:22,width:'100%',maxWidth:680,maxHeight:'92vh',overflowY:'auto',display:'flex',flexDirection:'column',boxShadow:'0 30px 80px rgba(0,0,0,.8)'}}>
+        {/* header */}
+        <div style={{padding:'22px 24px 0',display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexShrink:0}}>
+          <div>
+            <h2 style={{fontFamily:"'Bebas Neue',cursive",fontSize:30,color:'#fff',letterSpacing:2,marginBottom:6}}>{localD.title}</h2>
+            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+              <NickDisplay userId={localD.authorId} nick={localD.author} size={13}/>
+              <span style={{color:'#222',fontSize:11}}>· {new Date(localD.createdAt).toLocaleDateString('en-US')}</span>
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{background:'rgba(255,255,255,.06)',border:'none',borderRadius:9,padding:'7px 14px',color:'#666',fontSize:16,flexShrink:0,transition:'color .2s'}}
+            onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#666'}>✕</button>
+        </div>
+        {/* image */}
+        <div style={{padding:'16px 24px',flexShrink:0}}>
+          <div style={imgBorder}>
+            <img src={localD.data} alt={localD.title} style={{width:'100%',display:'block',imageRendering:'pixelated'}}/>
+          </div>
+        </div>
+        {/* action bar */}
+        <div style={{padding:'0 24px 16px',display:'flex',gap:10,alignItems:'center',flexShrink:0,flexWrap:'wrap'}}>
+          <button onClick={handleLike} disabled={isOwn} className={'like-btn'+(liked?' popped':'')} title={isOwn?'Cannot like your own artworks':''}
+            style={{display:'flex',alignItems:'center',gap:7,background:liked?'rgba(232,93,117,.18)':'rgba(255,255,255,.05)',border:'1px solid '+(liked?'rgba(232,93,117,.55)':'rgba(255,255,255,.1)'),borderRadius:10,padding:'9px 18px',color:liked?'#e85d75':'#777',fontSize:13,fontWeight:700,opacity:isOwn?.4:1,cursor:isOwn?'not-allowed':'pointer'}}>
+            {liked?'❤️':'🤍'} {likeCount}
+          </button>
+          <button onClick={handleFav}
+            style={{display:'flex',alignItems:'center',gap:7,background:isFav?'rgba(255,209,102,.15)':'rgba(255,255,255,.05)',border:'1px solid '+(isFav?'rgba(255,209,102,.5)':'rgba(255,255,255,.1)'),borderRadius:10,padding:'9px 18px',color:isFav?'#ffd166':'#777',fontSize:13,fontWeight:700}}>
+            {isFav?'⭐ In Favorites':'☆ Add to Favorites'}
+          </button>
+          <div style={{marginLeft:'auto',display:'flex',gap:14,fontSize:11,color:'#333',flexWrap:'wrap'}}>
+            <span style={{color:'#ff6b35'}}>👁 {localD.views}</span>
+            <span style={{color:'#ffd166'}}>💰 {Math.floor(localD.views/10)}</span>
+            <span style={{color:'#06d6a0'}}>📐 {localD.gridSize||32}²</span>
+          </div>
+        </div>
+        {/* tabs */}
+        <div style={{borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',flexShrink:0,overflowX:'auto'}}>
+          {[['info','📋 Info'],[`likes`,`❤️ Likes (${likerList.length})`],['comments',`💬 Comments (${commentCount})`]].map(([k,l])=>(
+            <button key={k} className={'tab-btn'+(tab===k?' active':'')} onClick={()=>setTab(k)}>{l}</button>
+          ))}
+        </div>
+        {/* tab body */}
+        <div style={{padding:'16px 24px',flex:1}}>
+          {tab==='info'&&(
+            <div style={{fontSize:12,color:'#444',lineHeight:2.2}}>
+              <div>📅 <span style={{color:'#888'}}>{new Date(localD.createdAt).toLocaleString('en-US')}</span></div>
+              <div>📐 <span style={{color:'#888'}}>{localD.gridSize||32}×{localD.gridSize||32} px</span></div>
+              <div>👁 <span style={{color:'#ff6b35'}}>{localD.views} views</span></div>
+              <div>❤️ <span style={{color:'#e85d75'}}>{likerList.length} likes</span></div>
+              <div>💬 <span style={{color:'#5599ff'}}>{commentCount} comments</span></div>
+              <div>💰 <span style={{color:'#ffd166'}}>{Math.floor(localD.views/10)} coins earned</span></div>
+              {localD.description&&<div style={{marginTop:10,padding:'10px 13px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:9,color:'#999',fontSize:12,lineHeight:1.7}}>{localD.description}</div>}
+              {isOwn&&<div style={{marginTop:8,padding:'8px 12px',background:'rgba(255,107,53,.07)',border:'1px solid rgba(255,107,53,.2)',borderRadius:8,color:'#ff6b35',fontSize:11}}>✏️ This is your artwork</div>}
+            </div>
+          )}
+          {tab==='likes'&&(
+            likerList.length===0?(
+              <div style={{textAlign:'center',padding:'30px 0',color:'#222',fontSize:12}}>No likes yet</div>
+            ):(
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {likerList.map(f=>(
+                  <div key={f.uid} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 13px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:10}}>
+                    <div style={{width:30,height:30,background:'linear-gradient(135deg,#ff6b35,#a855f7)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Bebas Neue',cursive",fontSize:15,flexShrink:0}}>
+                      {f.nick[0].toUpperCase()}
+                    </div>
+                    <NickDisplay userId={f.uid} nick={f.nick} size={12}/>
+                    <div style={{marginLeft:'auto',display:'flex',gap:6,alignItems:'center'}}>
+                      {f.hasSuperLike&&<span style={{fontSize:9,color:TIER.legendary.badge,border:'1px solid '+TIER.legendary.badge,borderRadius:4,padding:'2px 5px'}}>SUPER×5</span>}
+                      <span style={{color:'#e85d75'}}>❤️</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+          {tab==='comments'&&(
+            <CommentSection drawingId={localD.id} currentUser={currentUser}/>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   PUBLISH MODAL
+════════════════════════════════════════════════════════ */
+function PublishModal({img,onPublish,onCancel}){
+  const [title,setTitle]=useState('');
+  const [desc,setDesc]=useState('');
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.88)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999,backdropFilter:'blur(12px)'}}>
+      <div className="modal-in" style={{background:'#0b0b18',border:'1px solid rgba(255,255,255,.1)',borderRadius:20,padding:28,maxWidth:480,width:'92%',boxShadow:'0 30px 80px rgba(0,0,0,.8)'}}>
+        <h3 style={{fontFamily:"'Bebas Neue',cursive",fontSize:24,color:'#fff',margin:'0 0 14px',letterSpacing:2}}>PUBLISH</h3>
+        <img src={img} alt="preview" style={{width:'100%',borderRadius:10,marginBottom:14,imageRendering:'pixelated',border:'1px solid rgba(255,255,255,.08)'}}/>
+        <div style={{display:'flex',flexDirection:'column',gap:9,marginBottom:12}}>
+          <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Artwork title *" autoFocus
+            onKeyDown={e=>e.key==='Enter'&&title.trim()&&onPublish(title.trim(),desc.trim())}
+            className="inp"/>
+          <textarea value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Description (optional)" rows={2}
+            style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:9,padding:'10px 14px',color:'#fff',fontSize:13,resize:'none',lineHeight:1.5}}/>
+        </div>
+        <div style={{display:'flex',gap:9}}>
+          <button onClick={onCancel} style={{flex:1,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:9,padding:10,color:'#666',fontSize:12}}>Cancel</button>
+          <button onClick={()=>title.trim()&&onPublish(title.trim(),desc.trim())} className="glow-btn"
+            style={{flex:2,background:'linear-gradient(135deg,#ff6b35,#f7931e)',border:'none',borderRadius:9,padding:10,color:'#1a1a2e',fontWeight:800,fontSize:13}}>🚀 Publish</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   SHOP
+════════════════════════════════════════════════════════ */
+function Shop({user,onBuy,onEquip}){
+  const [filter,setFilter]=useState('all');
+  const owned=user.inventory||[];
+  const isEq=item=>{
+    if(item.type==='badge')   return user.badge===item.id;
+    if(item.type==='frame')   return user.frame===item.id;
+    if(item.type==='palette') return user.palette===item.id.replace('palette_','');
+    if(item.type==='canvas')  return item.id==='size_xl'?user.canvasSize===64:item.id==='size_xxl'?user.canvasSize===96:item.id==='size_mega'?user.canvasSize===128:item.id==='size_ultra'?user.canvasSize===256:false;
+    if(item.type==='zoom')    return user.galleryZoom===item.id.replace('zoom_','');
+    if(item.type==='title')   return user.title===item.id;
+    if(item.type==='acc')     return user.acc===item.id;
+    if(item.type==='vip')     return owned.includes(item.id);
+    return false;
+  };
+  const groups=[
+    {key:'vip',    label:'👑 VIP Perks',         isVip:true},
+    {key:'title',  label:'📛 Titles'},
+    {key:'badge',  label:'🏅 Badges'},
+    {key:'frame',  label:'🖼 Frames'},
+    {key:'acc',    label:'💫 Profile Accessories'},
+    {key:'palette',label:'🎨 Palettes'},
+    {key:'canvas', label:'📐 Canvases'},
+    {key:'zoom',   label:'🔍 Gallery Zoom'},
+  ];
+  const filtered=filter==='all'?SHOP_ITEMS:filter==='owned'?SHOP_ITEMS.filter(i=>owned.includes(i.id)):SHOP_ITEMS.filter(i=>i.tier===filter);
+  return(
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20,flexWrap:'wrap',gap:12}}>
+        <div>
+          <h1 style={{fontFamily:"'Bebas Neue',cursive",fontSize:40,letterSpacing:3,margin:0}}>SHOP</h1>
+          <p style={{color:'#333',margin:'3px 0 0',fontSize:11}}>Spend coins · collect · flex</p>
+        </div>
+        <div style={{background:'rgba(255,209,102,.1)',border:'1px solid rgba(255,209,102,.2)',borderRadius:12,padding:'11px 20px',fontSize:18,color:'#ffd166',fontWeight:700}}>💰 {user.coins} coins</div>
+      </div>
+
+      <div style={{display:'flex',gap:6,marginBottom:24,flexWrap:'wrap'}}>
+        {[['all','All','#888'],['common','Common',TIER.common.badge],['rare','Rare',TIER.rare.badge],['epic','Epic',TIER.epic.badge],['legendary','Legendary',TIER.legendary.badge],['mythic','Mythic',TIER.mythic.badge],['owned','Owned','#06d6a0']].map(([k,l,c])=>(
+          <button key={k} onClick={()=>setFilter(k)}
+            style={{background:filter===k?'rgba(255,255,255,.08)':'transparent',border:'1px solid '+(filter===k?c:'rgba(255,255,255,.08)'),borderRadius:7,padding:'6px 13px',color:filter===k?c:'#444',fontSize:11,transition:'all .2s'}}>
+            {l}
+          </button>
+        ))}
+      </div>
+      {groups.map(g=>{
+        const items=filtered.filter(i=>i.type===g.key);
+        if(!items.length)return null;
+        return(
+          <div key={g.key} style={{marginBottom:36}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+              <h3 style={{color:g.isVip?'#ffd700':'#555',fontSize:11,letterSpacing:2,textTransform:'uppercase',fontWeight:500}}>{g.label}</h3>
+              {g.isVip&&<span style={{background:'rgba(255,215,0,.12)',border:'1px solid rgba(255,215,0,.3)',borderRadius:5,padding:'2px 8px',fontSize:9,color:'#ffd700',letterSpacing:1}}>EXCLUSIVE</span>}
+              <span style={{color:'#222',fontSize:11}}>({items.length})</span>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(215px, 1fr))',gap:10}}>
+              {items.map(item=>{
+                const own=owned.includes(item.id);
+                const eq=isEq(item);
+                const tc=TIER[item.tier]||TIER.common;
+                const isLeg=item.tier==='legendary'||item.tier==='mythic';
+                return(
+                  <div key={item.id} className={isLeg?'legendary-card':''}
+                    style={{background:own?'rgba(6,214,160,.05)':tc.bg,border:'1px solid '+(eq?'rgba(255,107,53,.55)':own?'rgba(6,214,160,.2)':tc.border),borderRadius:12,padding:15,position:'relative',transition:'all .2s'}}>
+                    <div style={{position:'absolute',top:9,right:9,background:tc.badge,borderRadius:4,padding:'2px 7px',fontSize:9,color:isLeg?'#1a1a2e':'#fff',fontWeight:700,textTransform:'uppercase',letterSpacing:.5}}>{tc.label}</div>
+                    <div style={{marginBottom:11,paddingRight:64}}>
+                      <div style={{fontWeight:700,fontSize:13,color:'#ddd',marginBottom:3,display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+                        {item.emoji&&<span>{item.emoji}</span>}
+                        {item.color&&item.color!=='rainbow'&&<span style={{display:'inline-block',width:11,height:11,borderRadius:2,background:item.color,border:'1px solid rgba(255,255,255,.2)',flexShrink:0}}/>}
+                        {item.color==='rainbow'&&<span>🌈</span>}
+                        {item.titleColor&&<span style={{display:'inline-block',width:11,height:11,borderRadius:2,background:item.titleColor,flexShrink:0}}/>}
+                        <span>{item.name}</span>
+                      </div>
+                      <div style={{fontSize:11,color:'#444',lineHeight:1.5}}>{item.desc}</div>
+                    </div>
+                    <div style={{marginBottom:9}}>
+                      <span style={{fontSize:13,color:own?'#06d6a0':'#ffd166',fontWeight:700}}>{own?'✓ Owned':item.price===0?'🆓 Free':`💰 ${item.price}`}</span>
+                    </div>
+                    {!own&&(
+                      <button onClick={()=>onBuy(item)} disabled={user.coins<item.price}
+                        style={{width:'100%',background:user.coins>=item.price?'linear-gradient(135deg,#ff6b35,#f7931e)':'rgba(255,255,255,.03)',border:'1px solid '+(user.coins>=item.price?'transparent':'rgba(255,255,255,.06)'),borderRadius:8,padding:'9px',color:user.coins>=item.price?'#1a1a2e':'#2a2a3a',fontWeight:700,fontSize:12,cursor:user.coins>=item.price?'pointer':'not-allowed',transition:'all .2s'}}>
+                        {user.coins>=item.price?'Buy':'Not enough coins'}
+                      </button>
+                    )}
+                    {own&&!eq&&item.type!=='vip'&&(
+                      <button onClick={()=>onEquip(item)}
+                        style={{width:'100%',background:'rgba(6,214,160,.1)',border:'1px solid rgba(6,214,160,.25)',borderRadius:8,padding:'9px',color:'#06d6a0',fontWeight:700,fontSize:12}}>
+                        ✓ Equip
+                      </button>
+                    )}
+                    {(eq||item.type==='vip')&&own&&(
+                      <div style={{width:'100%',background:item.type==='vip'?'rgba(255,215,0,.08)':'rgba(255,107,53,.1)',border:'1px solid '+(item.type==='vip'?'rgba(255,215,0,.3)':'rgba(255,107,53,.3)'),borderRadius:8,padding:'9px',color:item.type==='vip'?'#ffd166':'#ff6b35',fontWeight:700,fontSize:12,textAlign:'center'}}>
+                        {item.type==='vip'?'⚡ Active':'✨ Equipped'}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   ART JAM  (admin posts + coin giveaway panel)
+════════════════════════════════════════════════════════ */
+function ArtJam({currentUser,showToast}){
+  const isAdmin=currentUser.nick===ADMIN_NICK||currentUser.isAdmin;
+  const [jams,setJams]=useState([]);
+  const [title,setTitle]=useState('');
+  const [body,setBody]=useState('');
+  const [giveNick,setGiveNick]=useState('');
+  const [giveCoins,setGiveCoins]=useState('');
+  const [giveMsg,setGiveMsg]=useState('');
+
+  const load=()=>setJams([...DB.getJams()].reverse());
+  useEffect(()=>{load();const t=setInterval(load,2000);return()=>clearInterval(t)},[]);
+
+  const handlePost=()=>{
+    if(!title.trim())return;
+    const post={id:'j_'+Date.now(),title:title.trim(),body:body.trim(),author:currentUser.nick,createdAt:Date.now()};
+    const all=DB.getJams();all.push(post);DB.saveJams(all);
+    setTitle('');setBody('');load();showToast('📢 Post published!');
+  };
+
+  const handleDelete=id=>{
+    if(!window.confirm('Delete this post?'))return;
+    DB.saveJams(DB.getJams().filter(j=>j.id!==id));load();showToast('🗑️ Post deleted','#e85d75');
+  };
+
+  const handleGive=()=>{
+    const nick=giveNick.trim();const amount=parseInt(giveCoins,10);
+    if(!nick||isNaN(amount)||amount<=0){setGiveMsg('⚠️ Enter valid data');return}
+    const users=DB.getUsers();
+    const entry=Object.values(users).find(u=>u.nick.toLowerCase()===nick.toLowerCase());
+    if(!entry){setGiveMsg('❌ User not found');return}
+    DB.updateUser(entry.email,{coins:(entry.coins||0)+amount});
+    setGiveMsg(`✅ ${nick} received ${amount} coins!`);
+    setGiveNick('');setGiveCoins('');
+    showToast(`💰 Gave ${amount} coins → ${nick}`,'#ffd166');
+    setTimeout(()=>setGiveMsg(''),3000);
+  };
+
+  return(
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:22,flexWrap:'wrap',gap:12}}>
+        <div>
+          <h1 style={{fontFamily:"'Bebas Neue',cursive",fontSize:40,letterSpacing:3,margin:0}}>ART JAM</h1>
+          <p style={{color:'#333',margin:'3px 0 0',fontSize:11}}>Announcements and events from admin</p>
+        </div>
+        {isAdmin&&<div style={{background:'rgba(255,0,0,.1)',border:'1px solid rgba(255,0,0,.3)',borderRadius:9,padding:'6px 14px',fontSize:11,color:'#ff2222',fontWeight:900,letterSpacing:1}}>⚙️ ADMIN PANEL</div>}
+      </div>
+
+      {/* ADMIN PANEL */}
+      {isAdmin&&(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:28}}>
+          {/* new post */}
+          <div style={{background:'rgba(255,34,34,.04)',border:'1px solid rgba(255,34,34,.2)',borderRadius:16,padding:20}}>
+            <div style={{fontSize:12,color:'#ff4444',letterSpacing:1,textTransform:'uppercase',marginBottom:14,fontWeight:700}}>📢 New Post</div>
+            <div style={{display:'flex',flexDirection:'column',gap:9}}>
+              <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Post title *" className="inp" style={{fontSize:13}}/>
+              <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Post body..." rows={4}
+                style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:9,padding:'10px 14px',color:'#fff',fontSize:13,resize:'vertical',lineHeight:1.6}}/>
+              <button onClick={handlePost} className="glow-btn"
+                style={{background:'linear-gradient(135deg,#ff4444,#cc0000)',border:'none',borderRadius:9,padding:'11px',color:'#fff',fontWeight:700,fontSize:13}}>
+                📢 Publish
+              </button>
+            </div>
+          </div>
+          {/* give coins */}
+          <div style={{background:'rgba(255,209,102,.04)',border:'1px solid rgba(255,209,102,.2)',borderRadius:16,padding:20}}>
+            <div style={{fontSize:12,color:'#ffd166',letterSpacing:1,textTransform:'uppercase',marginBottom:14,fontWeight:700}}>💰 Give Coins</div>
+            <div style={{display:'flex',flexDirection:'column',gap:9}}>
+              <input value={giveNick} onChange={e=>setGiveNick(e.target.value)} placeholder="Player username" className="inp" style={{fontSize:13}}
+                onKeyDown={e=>e.key==='Enter'&&handleGive()}/>
+              <input value={giveCoins} onChange={e=>setGiveCoins(e.target.value)} placeholder="Amount of coins" type="number" min="1" className="inp" style={{fontSize:13}}
+                onKeyDown={e=>e.key==='Enter'&&handleGive()}/>
+              <button onClick={handleGive} className="glow-btn"
+                style={{background:'linear-gradient(135deg,#ffd166,#f7931e)',border:'none',borderRadius:9,padding:'11px',color:'#1a1a2e',fontWeight:700,fontSize:13}}>
+                💰 Give
+              </button>
+              {giveMsg&&(
+                <div style={{padding:'9px 13px',borderRadius:8,background:giveMsg.startsWith('✅')?'rgba(6,214,160,.1)':'rgba(255,70,70,.1)',border:'1px solid '+(giveMsg.startsWith('✅')?'rgba(6,214,160,.3)':'rgba(255,70,70,.3)'),color:giveMsg.startsWith('✅')?'#06d6a0':'#ff9090',fontSize:12}}>
+                  {giveMsg}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POSTS FEED */}
+      {jams.length===0?(
+        <div style={{textAlign:'center',padding:'70px 20px',color:'#1a1a2a'}}>
+          <div style={{fontFamily:"'Press Start 2P'",fontSize:20,color:'#111',marginBottom:14}}>[ ]</div>
+          <p style={{fontSize:12,color:'#222'}}>{isAdmin?'Write the first post above':'No posts yet. Stay tuned for updates!'}</p>
+        </div>
+      ):(
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {jams.map(j=>(
+            <div key={j.id} style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,padding:'20px 22px',position:'relative'}}>
+              {isAdmin&&(
+                <button onClick={()=>handleDelete(j.id)}
+                  style={{position:'absolute',top:14,right:14,background:'rgba(180,20,20,.8)',border:'none',borderRadius:6,padding:'4px 9px',fontSize:12,color:'#fff'}}>
+                  🗑️
+                </button>
+              )}
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <div style={{background:'linear-gradient(135deg,#ff2222,#880000)',borderRadius:7,padding:'4px 10px',fontSize:10,color:'#fff',fontWeight:700,letterSpacing:1}}>ADMIN POST</div>
+                <span style={{fontSize:11,color:'#333'}}>{new Date(j.createdAt).toLocaleString('en-US',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+              </div>
+              <h3 style={{fontFamily:"'Bebas Neue',cursive",fontSize:22,letterSpacing:2,color:'#fff',marginBottom:8}}>{j.title}</h3>
+              {j.body&&<p style={{fontSize:13,color:'#888',lineHeight:1.8,whiteSpace:'pre-wrap'}}>{j.body}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   SETTINGS  (owner only)
+════════════════════════════════════════════════════════ */
+function Settings({user,setUser,showToast,onLogout}){
+  const [bio,setBio]=useState(user.bio||'');
+  const [saved,setSaved]=useState(false);
+
+  const saveBio=()=>{
+    const updated=DB.updateUser(user.email,{bio:bio.trim()});
+    if(updated){setUser({...updated});setSaved(true);setTimeout(()=>setSaved(false),2000);showToast('✅ Profile saved','#06d6a0')}
+  };
+
+  const handleDeleteAccount=()=>{
+    const confirm1=window.confirm('Delete account? This is IRREVERSIBLE. All your artworks will also be deleted!');
+    if(!confirm1)return;
+    const confirm2=window.prompt(`Type your username "${user.nick}" to confirm deletion:`);
+    if(confirm2!==user.nick){alert('Username does not match. Deletion cancelled.');return}
+    // delete all drawings
+    const drawings=DB.getDrawings().filter(d=>d.authorId!==user.id);
+    DB.saveDrawings(drawings);
+    // delete user
+    const users=DB.getUsers();
+    delete users[user.email];
+    DB.saveUsers(users);
+    onLogout();
+  };
+
+  return(
+    <div>
+      <h1 style={{fontFamily:"'Bebas Neue',cursive",fontSize:40,letterSpacing:3,marginBottom:6}}>SETTINGS</h1>
+      <p style={{color:'#333',fontSize:11,marginBottom:24}}>Only you can see this page</p>
+
+      {/* profile info */}
+      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:22,marginBottom:18}}>
+        <div style={{fontSize:11,color:'#555',letterSpacing:2,textTransform:'uppercase',marginBottom:14}}>📋 Profile</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
+          <div>
+            <div style={{fontSize:11,color:'#444',marginBottom:5}}>Username</div>
+            <div style={{padding:'10px 13px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:8,fontSize:13,color:'#888'}}>{user.nick}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'#444',marginBottom:5}}>Email</div>
+            <div style={{padding:'10px 13px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:8,fontSize:13,color:'#888'}}>{user.email}</div>
+          </div>
+        </div>
+        <div>
+          <div style={{fontSize:11,color:'#444',marginBottom:5}}>Profile Bio</div>
+          <textarea value={bio} onChange={e=>setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3}
+            style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:9,padding:'10px 14px',color:'#fff',fontSize:13,resize:'vertical',lineHeight:1.6,marginBottom:10}}/>
+          <button onClick={saveBio} className="glow-btn"
+            style={{background:saved?'rgba(6,214,160,.2)':'linear-gradient(135deg,#ff6b35,#f7931e)',border:saved?'1px solid rgba(6,214,160,.4)':'none',borderRadius:9,padding:'10px 24px',color:saved?'#06d6a0':'#1a1a2e',fontWeight:700,fontSize:13,transition:'all .3s'}}>
+            {saved?'✅ Saved':'💾 Save'}
+          </button>
+        </div>
+      </div>
+
+      {/* stats */}
+      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:22,marginBottom:18}}>
+        <div style={{fontSize:11,color:'#555',letterSpacing:2,textTransform:'uppercase',marginBottom:14}}>📊 Stats</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(130px, 1fr))',gap:10}}>
+          {[
+            ['💰','Coins',user.coins],
+            ['🎨','Artworks',DB.getDrawings().filter(d=>d.authorId===user.id).length],
+            ['❤️','Likes received',DB.getDrawings().filter(d=>d.authorId===user.id).reduce((s,d)=>s+(d.likedBy||[]).length,0)],
+            ['⭐','In favorites',(user.favorites||[]).length],
+            ['🛒','Shop items owned',(user.inventory||[]).length],
+            ['📅','Joined',new Date(user.joinedAt).toLocaleDateString('en-US')],
+          ].map(([e,l,v])=>(
+            <div key={l} style={{textAlign:'center',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',borderRadius:11,padding:'12px 8px'}}>
+              <div style={{fontSize:18,marginBottom:4}}>{e}</div>
+              <div style={{fontSize:14,fontWeight:700,color:'#fff',marginBottom:3}}>{v}</div>
+              <div style={{fontSize:9,color:'#444',textTransform:'uppercase',letterSpacing:.5,lineHeight:1.3}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* inventory */}
+      {(user.inventory||[]).length>0&&(
+        <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:22,marginBottom:18}}>
+          <div style={{fontSize:11,color:'#555',letterSpacing:2,textTransform:'uppercase',marginBottom:14}}>🛒 Owned from Shop</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+            {(user.inventory||[]).map(id=>{
+              const item=SHOP_ITEMS.find(i=>i.id===id);
+              if(!item)return null;
+              const tc=TIER[item.tier]||TIER.common;
+              return(
+                <div key={id} style={{background:tc.bg,border:'1px solid '+tc.border,borderRadius:8,padding:'6px 12px',fontSize:11,color:tc.badge,display:'flex',alignItems:'center',gap:5}}>
+                  {item.emoji||'✨'} {item.name}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* danger zone */}
+      <div style={{background:'rgba(200,20,20,.05)',border:'1px solid rgba(200,20,20,.2)',borderRadius:16,padding:22}}>
+        <div style={{fontSize:11,color:'#cc3333',letterSpacing:2,textTransform:'uppercase',marginBottom:14,fontWeight:700}}>⚠️ Danger Zone</div>
+        <p style={{fontSize:12,color:'#555',marginBottom:14,lineHeight:1.7}}>
+          Account deletion is permanent. All your artworks, likes, coins and shop items will be deleted forever.
+        </p>
+        <button onClick={handleDeleteAccount}
+          style={{background:'rgba(200,20,20,.15)',border:'1px solid rgba(200,20,20,.4)',borderRadius:9,padding:'10px 20px',color:'#ff4444',fontWeight:700,fontSize:12,transition:'all .2s'}}
+          onMouseEnter={e=>{e.currentTarget.style.background='rgba(200,20,20,.3)'}}
+          onMouseLeave={e=>{e.currentTarget.style.background='rgba(200,20,20,.15)'}}>
+          🗑️ Delete My Account
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   PROFILE
+════════════════════════════════════════════════════════ */
+function Profile({user,drawings,onViewDrawing,onDeleteDrawing,isAdmin}){
+  const [tab,setTab]=useState('my');
+  const mine=drawings.filter(d=>d.authorId===user.id);
+  const likedDrawings=drawings.filter(d=>(d.likedBy||[]).includes(user.id));
+  const favDrawings=drawings.filter(d=>(user.favorites||[]).includes(d.id));
+  const totalViews=mine.reduce((s,d)=>s+d.views,0);
+  const totalLikes=mine.reduce((s,d)=>s+(d.likedBy||[]).length,0);
+  const vip=getUserVip(user);
+  const fc=user.frame?SHOP_ITEMS.find(i=>i.id===user.frame)?.color:null;
+  const titleItem=user.title?SHOP_ITEMS.find(i=>i.id===user.title):null;
+
+  const usersDB=DB.getUsers();
+  const fansMap={};
+  mine.forEach(d=>{(d.likedBy||[]).forEach(uid=>{
+    if(!fansMap[uid]){const u=Object.values(usersDB).find(x=>x.id===uid);fansMap[uid]={uid,nick:u?.nick||uid,drawingTitle:d.title}}
+  })});
+  const fans=Object.values(fansMap);
+
+  const equippedItems=SHOP_ITEMS.filter(i=>{
+    if(!(user.inventory||[]).includes(i.id))return false;
+    if(i.type==='vip')return true;
+    return user.badge===i.id||user.frame===i.id||user.title===i.id
+      ||(user.palette&&i.id==='palette_'+user.palette)
+      ||(user.canvasSize===64&&i.id==='size_xl')||(user.canvasSize===96&&i.id==='size_xxl')||(user.canvasSize===128&&i.id==='size_mega')
+      ||(user.galleryZoom&&i.id==='zoom_'+user.galleryZoom);
+  });
+
+  const TABS=[['my',`🎨 Artworks (${mine.length})`],['liked',`❤️ Liked (${likedDrawings.length})`],['favs',`⭐ Favorites (${favDrawings.length})`],['fans',`👥 Fans (${fans.length})`]];
+
+  const renderGrid=(list,deletable=false)=>{
+    if(!list.length)return(<div style={{textAlign:'center',padding:'55px 20px',color:'#1c1c2a'}}><div style={{fontFamily:"'Press Start 2P'",fontSize:22,marginBottom:12,color:'#111'}}>[]</div><p style={{fontSize:12,color:'#2a2a3a'}}>Empty</p></div>);
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(175px, 1fr))',gap:12}}>{list.map(d=><DrawCard key={d.id} d={d} onView={onViewDrawing} currentUserId={user.id} showDelete={deletable||isAdmin} onDelete={onDeleteDrawing}/>)}</div>);
+  };
+
+  return(
+    <div>
+      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:20,padding:26,marginBottom:22}}>
+        <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
+          <div style={{width:70,height:70,background:'linear-gradient(135deg,#ff6b35,#a855f7)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Bebas Neue',cursive",fontSize:36,color:'#fff',border:fc&&fc!=='rainbow'?`3px solid ${fc}`:'2px solid rgba(255,255,255,.1)',boxShadow:fc&&fc!=='rainbow'?`0 0 16px ${fc}55`:'none',flexShrink:0}}>
+            {user.nick[0].toUpperCase()}
+          </div>
+          <div style={{flex:1,minWidth:140}}>
+            <NickDisplay userId={user.id} nick={user.nick} size={24}/>
+            {isAdmin&&<div style={{fontSize:10,color:'#ff2222',marginTop:3,letterSpacing:1,textTransform:'uppercase',fontWeight:900}}>⚙️ ADMINISTRATOR</div>}
+            {titleItem&&<div style={{fontSize:11,color:titleItem.titleColor||'#888',marginTop:3,letterSpacing:1}}>[{titleItem.name}]</div>}
+            {user.bio&&<p style={{fontSize:12,color:'#666',marginTop:6,lineHeight:1.6,maxWidth:400}}>{user.bio}</p>}
+          </div>
+          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+            {[['💰',user.coins,'coins'],['🎨',`${mine.length}/${vip.workLimit}`,'artworks'],['👁',totalViews,'views'],['❤️',totalLikes,'likes']].map(([e,v,l])=>(
+              <div key={l} style={{textAlign:'center',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',borderRadius:12,padding:'10px 14px'}}>
+                <div style={{fontSize:14}}>{e}</div>
+                <div style={{fontFamily:"'Bebas Neue',cursive",fontSize:22,letterSpacing:1,color:'#fff'}}>{v}</div>
+                <div style={{fontSize:9,color:'#444',textTransform:'uppercase',letterSpacing:1}}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {equippedItems.length>0&&(
+          <div style={{marginTop:14,paddingTop:14,borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',gap:7,flexWrap:'wrap'}}>
+            {equippedItems.map(i=>(
+              <div key={i.id} style={{background:i.type==='vip'?'rgba(255,215,0,.08)':'rgba(255,255,255,.04)',border:'1px solid '+(i.type==='vip'?'rgba(255,215,0,.25)':'rgba(255,255,255,.07)'),borderRadius:7,padding:'4px 10px',fontSize:11,color:i.type==='vip'?'#ffd166':'#666'}}>
+                {i.emoji||'✨'} {i.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{display:'flex',borderBottom:'1px solid rgba(255,255,255,.06)',marginBottom:18,overflowX:'auto'}}>
+        {TABS.map(([k,l])=>(<button key={k} className={'tab-btn'+(tab===k?' active':'')} onClick={()=>setTab(k)}>{l}</button>))}
+      </div>
+      {tab==='my'&&renderGrid(mine,true)}
+      {tab==='liked'&&renderGrid(likedDrawings)}
+      {tab==='favs'&&renderGrid(favDrawings)}
+      {tab==='fans'&&(fans.length===0?(
+        <div style={{textAlign:'center',padding:'55px 20px'}}><div style={{fontSize:32,marginBottom:10}}>💔</div><p style={{fontSize:12,color:'#2a2a3a'}}>Nobody liked your artworks yet</p></div>
+      ):(
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {fans.map(f=>(
+            <div key={f.uid} style={{display:'flex',alignItems:'center',gap:12,padding:'13px 16px',background:'rgba(232,93,117,.05)',border:'1px solid rgba(232,93,117,.15)',borderRadius:12}}>
+              <div style={{width:36,height:36,background:'linear-gradient(135deg,#e85d75,#ff6b35)',borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Bebas Neue',cursive",fontSize:18,flexShrink:0}}>{f.nick[0].toUpperCase()}</div>
+              <div style={{flex:1}}><NickDisplay userId={f.uid} nick={f.nick} size={13}/><div style={{fontSize:11,color:'#444',marginTop:2}}>liked "{f.drawingTitle}"</div></div>
+              <span style={{color:'#e85d75',fontSize:20}}>❤️</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   AUTH
+════════════════════════════════════════════════════════ */
+function AuthScreen({onLogin}){
+  const [mode,setMode]=useState('login');
+  const [email,setEmail]=useState('');
+  const [pw,setPw]=useState('');
+  const [nick,setNick]=useState('');
+  const [err,setErr]=useState('');
+  const [loading,setLoading]=useState(false);
+  const submit=()=>{
+    setErr('');setLoading(true);
+    setTimeout(()=>{
+      try{
+        const users=DB.getUsers();
+        if(mode==='register'){
+          if(!email||!pw||!nick)return setErr('Fill in all fields');
+          if(pw.length<6)return setErr('Password must be at least 6 characters');
+          if(!/\S+@\S+\.\S+/.test(email))return setErr('Invalid email');
+          if(users[email])return setErr('Email already taken');
+          if(Object.values(users).some(u=>u.nick.toLowerCase()===nick.toLowerCase()))return setErr('Username already taken');
+          const isAdmin=nick===ADMIN_NICK;
+          const user={id:'u_'+Date.now(),email,pw,nick,coins:10,inventory:isAdmin?['title_legend']:[],
+            badge:null,frame:null,palette:'default',canvasSize:32,galleryZoom:'md',
+            title:isAdmin?'title_legend':null,favorites:[],bio:'',isAdmin,adminTitle:isAdmin,joinedAt:Date.now()};
+          users[email]=user;DB.saveUsers(users);DB.ensureAdmin();onLogin({...user});
+        }else{
+          if(!email||!pw)return setErr('Enter email and password');
+          const user=users[email];
+          if(!user||user.pw!==pw)return setErr('Incorrect email or password');
+          DB.ensureAdmin();
+          let m={galleryZoom:'md',title:null,favorites:[],bio:'',...user};
+          if(m.nick===ADMIN_NICK&&!m.isAdmin){m.isAdmin=true;m.adminTitle=true;users[email]=m;DB.saveUsers(users)}
+          onLogin({...m});
+        }
+      }finally{setLoading(false);}
+    },80);
+  };
+  const inp={background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.09)',borderRadius:10,padding:'12px 15px',color:'#fff',fontSize:13,width:'100%',display:'block',transition:'border-color .2s'};
+  return(
+    <div style={{minHeight:'100vh',background:'#070712',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
+      {Array.from({length:20}).map((_,i)=>(
+        <div key={i} className="pixel-dot" style={{background:['#ff6b35','#ffd166','#06d6a0','#118ab2','#bf5fff'][i%5],opacity:.1,left:(i*37+11)%100+'%',top:(i*53+7)%100+'%',animation:`sq${i%3} ${3+i%4}s ${i*.3}s infinite alternate ease-in-out`}}/>
+      ))}
+      <div style={{width:'100%',maxWidth:400,padding:22,position:'relative',zIndex:1}}>
+        <div style={{textAlign:'center',marginBottom:36}}>
+          <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:20,color:'#ff6b35',textShadow:'3px 3px 0 #7a2e10,6px 6px 0 rgba(122,46,16,.2)',marginBottom:10}}>DRAW<span style={{color:'#ffd166'}}>CASH</span></div>
+          <p style={{color:'#2a2a3a',fontSize:10,letterSpacing:3,textTransform:'uppercase'}}>Pixel Art · Earn Coins · Flex</p>
+        </div>
+        <div style={{background:'rgba(255,255,255,.025)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:28,backdropFilter:'blur(20px)'}}>
+          <div style={{display:'flex',marginBottom:20,background:'rgba(0,0,0,.4)',borderRadius:9,padding:3,gap:3}}>
+            {[['login','Sign In'],['register','Sign Up']].map(([m,l])=>(
+              <button key={m} onClick={()=>{setMode(m);setErr('');}}
+                style={{flex:1,padding:'9px 0',background:mode===m?'#ff6b35':'transparent',border:'none',borderRadius:7,color:mode===m?'#1a1a2e':'#444',fontWeight:mode===m?700:400,fontSize:11,textTransform:'uppercase',letterSpacing:1,transition:'all .2s'}}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            <input style={inp} type="email" placeholder="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+            {mode==='register'&&<input style={inp} type="text" placeholder="username (unique)" value={nick} onChange={e=>setNick(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>}
+            <input style={inp} type="password" placeholder="password (min 6)" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+          </div>
+          {err&&<div style={{background:'rgba(255,70,70,.1)',border:'1px solid rgba(255,70,70,.25)',borderRadius:8,padding:'10px 14px',color:'#ff9090',fontSize:11,marginTop:10}}>{err}</div>}
+          <button onClick={submit} disabled={loading} className="glow-btn"
+            style={{marginTop:14,width:'100%',background:loading?'#111':'linear-gradient(135deg,#ff6b35,#f7931e)',border:'none',borderRadius:10,padding:14,color:'#1a1a2e',fontWeight:700,fontSize:12,opacity:loading?.5:1,letterSpacing:1,textTransform:'uppercase'}}>
+            {loading?'...':mode==='login'?'Sign In':'Create Account'}
+          </button>
+          {mode==='register'&&<p style={{color:'#1c1c2a',fontSize:10,textAlign:'center',marginTop:10,lineHeight:1.8}}>🎁 +10 starting coins · 💰 10 views = +1 coin</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════
+   MAIN APP
+════════════════════════════════════════════════════════ */
+function App(){
+  /* ── SESSION RESTORE: try to rehydrate from localStorage on mount ── */
+  const [user,setUserRaw]=useState(()=>{
+    try{
+      const email=localStorage.getItem('dc:session');
+      if(email){const u=DB.getUser(email);if(u)return{...u}}
+    }catch{}
+    return null;
+  });
+
+  /* wrapper: every setUser also persists/clears the session */
+  const setUser=useCallback((u)=>{
+    if(u){
+      try{localStorage.setItem('dc:session',u.email)}catch{}
+    }else{
+      try{localStorage.removeItem('dc:session')}catch{}
+    }
+    setUserRaw(u);
+  },[]);
+
+  const [page,setPage]=useState('gallery');
+  const [drawings,setDrawings]=useState([]);
+  const [sort,setSort]=useState('popular');
+  const [search,setSearch]=useState('');
+  const [viewing,setViewing]=useState(null);
+  const [pendingImg,setPendingImg]=useState(null);
+  const [pendingSize,setPendingSize]=useState(32);
+  const [toast,setToast]=useState(null);
+  const [loading,setLoading]=useState(true);
+
+  const showToast=(msg,color='#ff6b35')=>{setToast({msg,color,id:Date.now()});setTimeout(()=>setToast(null),3200)};
+  const refreshDrawings=()=>setDrawings(DB.getDrawings());
+  const refreshUser=()=>{
+    if(!user)return;
+    const f=DB.getUser(user.email);
+    if(f)setUser({...f}); // also re-saves session key
+  };
+
+  useEffect(()=>{setDrawings(DB.getDrawings());setLoading(false);},[]);
+  useEffect(()=>{const t=setInterval(()=>DB.ensureAdmin(),5000);return()=>clearInterval(t)},[]);
+
+  /* PUBLISH */
+  const handlePublish=(title,desc)=>{
+    const vip=getUserVip(user);
+    const mine=drawings.filter(d=>d.authorId===user.id);
+    if(mine.length>=vip.workLimit){showToast(`⛔ Limit ${vip.workLimit} artworks. Buy 'Work Limit ×3' in shop!`,'#e85d75');return}
+    const d={id:'d_'+Date.now(),title,description:desc||'',data:pendingImg,author:user.nick,authorId:user.id,
+      views:0,viewedBy:[],likedBy:[],comments:[],gridSize:pendingSize,createdAt:Date.now()};
+    const all=DB.getDrawings();all.unshift(d);DB.saveDrawings(all);
+    setPendingImg(null);refreshDrawings();setPage('gallery');showToast('🎨 Artwork published!');
+  };
+
+  /* VIEW — anti-cheat: no self-view, unique per viewer */
+  const handleViewed=drawingId=>{
+    const all=DB.getDrawings();
+    const idx=all.findIndex(d=>d.id===drawingId);
+    if(idx===-1)return null;
+    const d=all[idx];
+    if(d.authorId===user.id)return d; // no self-view
+    const viewedBy=d.viewedBy||[];
+    if(viewedBy.includes(user.id))return d; // already viewed
+    all[idx].viewedBy=[...viewedBy,user.id];
+    all[idx].views=(d.views||0)+1;
+    const nv=all[idx].views;
+    if(Math.floor(nv/10)>Math.floor((nv-1)/10)){
+      const usersDB=DB.getUsers();
+      const ae=Object.values(usersDB).find(u=>u.id===d.authorId);
+      if(ae){
+        const dbl=(ae.inventory||[]).includes('vip_doublecoin');
+        const add=dbl?2:1;
+        DB.updateUser(ae.email,{coins:(ae.coins||0)+add});
+        if(user&&ae.id===user.id){refreshUser();showToast(`💰 +${add} coin${add>1?'s':''}${dbl?' (×2 VIP)':''}!`,'#ffd166')}
+      }
+    }
+    DB.saveDrawings(all);refreshDrawings();
+    return all[idx];
+  };
+
+  /* LIKE — no self-like */
+  const handleLike=drawingId=>{
+    const all=DB.getDrawings();
+    const idx=all.findIndex(d=>d.id===drawingId);
+    if(idx===-1)return null;
+    const d=all[idx];
+    if(d.authorId===user.id)return d;
+    const likedBy=d.likedBy||[];
+    const already=likedBy.includes(user.id);
+    const hasSuperLike=(user.inventory||[]).includes('vip_superlike');
+    all[idx].likedBy=already?likedBy.filter(id=>id!==user.id):[...likedBy,user.id];
+    DB.saveDrawings(all);refreshDrawings();
+    if(already)showToast('💔 Like removed','#888');
+    else if(hasSuperLike)showToast('⚡ Super Like! (×5 weight)',TIER.legendary.badge);
+    else showToast('❤️ Liked!','#e85d75');
+    return all[idx];
+  };
+
+  /* FAVORITE — no self-fav cheat on views */
+  const handleFavorite=drawingId=>{
+    const favs=user.favorites||[];
+    const already=favs.includes(drawingId);
+    const newFavs=already?favs.filter(id=>id!==drawingId):[...favs,drawingId];
+    const updated=DB.updateUser(user.email,{favorites:newFavs});
+    setUser({...updated});
+    showToast(already?'☆ Removed from favorites':'⭐ Added to favorites','#ffd166');
+  };
+
+  /* DELETE DRAWING */
+  const handleDelete=d=>{
+    const isAdmin=user.nick===ADMIN_NICK||user.isAdmin;
+    const isOwn=d.authorId===user.id;
+    if(!isOwn&&!isAdmin)return;
+    const label=isAdmin&&!isOwn?`[ADMIN] Delete artwork "${d.title}"?`:`Delete artwork "${d.title}"? This cannot be undone.`;
+    if(!window.confirm(label))return;
+    DB.saveDrawings(DB.getDrawings().filter(x=>x.id!==d.id));
+    refreshDrawings();
+    if(viewing&&viewing.id===d.id)setViewing(null);
+    showToast(`🗑️ Artwork deleted`,'#e85d75');
+  };
+
+  /* BUY / EQUIP */
+  const handleBuy=item=>{
+    if(user.coins<item.price||(user.inventory||[]).includes(item.id))return;
+    const updated=DB.updateUser(user.email,{coins:user.coins-item.price,inventory:[...(user.inventory||[]),item.id]});
+    setUser({...updated});showToast(`🛒 ${item.name} — purchased!`);
+  };
+  const handleEquip=item=>{
+    const patch={};
+    if(item.type==='badge')   patch.badge=item.id;
+    if(item.type==='frame')   patch.frame=item.id;
+    if(item.type==='palette') patch.palette=item.id.replace('palette_','');
+    if(item.type==='canvas')  patch.canvasSize=item.id==='size_xl'?64:item.id==='size_xxl'?96:item.id==='size_mega'?128:item.id==='size_ultra'?256:32;
+    if(item.type==='zoom')    patch.galleryZoom=item.id.replace('zoom_','').replace('xs','sm');
+    if(item.type==='title')   patch.title=item.id;
+    if(item.type==='acc')     patch.acc=item.id;
+    if(item.type==='vip')     return;
+    const updated=DB.updateUser(user.email,patch);
+    setUser({...updated});showToast(`✨ ${item.name} — activated!`);
+  };
+
+  /* SORTED GALLERY */
+  const sorted=useMemo(()=>{
+    let list=[...drawings];
+    if(search.trim())list=list.filter(d=>d.title.toLowerCase().includes(search.toLowerCase())||d.author.toLowerCase().includes(search.toLowerCase()));
+    const pinned=d=>{const u=getUserById(d.authorId);return u&&(u.inventory||[]).includes('vip_pinned')};
+    if(sort==='popular')return list.sort((a,b)=>{const ap=pinned(a)?1:0,bp=pinned(b)?1:0;if(bp!==ap)return bp-ap;return b.views-a.views});
+    if(sort==='liked')  return list.sort((a,b)=>(b.likedBy||[]).length-(a.likedBy||[]).length);
+    return list.sort((a,b)=>b.createdAt-a.createdAt);
+  },[drawings,sort,search]);
+
+  const isAdmin=user?(user.nick===ADMIN_NICK||user.isAdmin):false;
+  const galleryZoom=user?.galleryZoom||'md';
+  const cardMinW={sm:130,md:190,lg:265,xl:330}[galleryZoom]||190;
+
+  if(!user)return <AuthScreen onLogin={u=>{setUser(u);refreshDrawings()}}/>;
+
+  const NAV=[['gallery','🗂','Gallery'],['draw','✏️','Draw'],['jam','🎪','Art Jam'],['shop','🛒','Shop'],['profile','👤','Profile'],['settings','⚙️','Settings']];
+
+  return(
+    <div style={{minHeight:'100vh',background:'#070712',fontFamily:"'DM Mono',monospace",color:'#fff'}}>
+      <div style={{position:'fixed',inset:0,background:'radial-gradient(ellipse at 10% 20%, rgba(255,107,53,.04) 0%, transparent 50%), radial-gradient(ellipse at 90% 80%, rgba(100,50,200,.04) 0%, transparent 50%)',pointerEvents:'none',zIndex:0}}/>
+
+      {/* NAV */}
+      <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(7,7,18,.96)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',borderBottom:'1px solid rgba(255,255,255,.05)',padding:'0 18px',display:'flex',alignItems:'center',justifyContent:'space-between',height:54,gap:8}}>
+        <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:11,color:'#ff6b35',textShadow:'2px 2px 0 #7a2e10',cursor:'pointer',flexShrink:0}} onClick={()=>setPage('gallery')}>DC</div>
+        <div style={{display:'flex',gap:2,overflowX:'auto'}}>
+          {NAV.map(([p,e,l])=>(
+            <button key={p} onClick={()=>setPage(p)}
+              style={{background:page===p?'rgba(255,107,53,.13)':'transparent',border:'1px solid '+(page===p?'rgba(255,107,53,.35)':'transparent'),borderRadius:7,padding:'5px 10px',color:page===p?'#ff6b35':'#444',fontSize:11,display:'flex',alignItems:'center',gap:4,transition:'all .2s',whiteSpace:'nowrap',flexShrink:0}}>
+              <span>{e}</span>
+              <span style={{display:window.innerWidth<640?'none':undefined}}>{l}</span>
+            </button>
+          ))}
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:7,flexShrink:0}}>
+          {isAdmin&&<div style={{background:'rgba(255,0,0,.1)',border:'1px solid rgba(255,0,0,.3)',borderRadius:7,padding:'4px 9px',fontSize:9,color:'#ff2222',fontWeight:900,letterSpacing:1,whiteSpace:'nowrap'}}>ADMIN</div>}
+          <button onClick={()=>setPage('shop')}
+            style={{background:'rgba(255,209,102,.08)',border:'1px solid rgba(255,209,102,.18)',borderRadius:7,padding:'5px 12px',fontSize:12,color:'#ffd166',fontWeight:700}}>
+            💰 {user.coins}
+          </button>
+          <button onClick={()=>setUser(null)} style={{background:'transparent',border:'1px solid rgba(255,255,255,.07)',borderRadius:7,padding:'5px 9px',color:'#333',fontSize:11}} title="Sign Out">⬛</button>
+        </div>
+      </nav>
+
+      {/* TOAST */}
+      {toast&&(
+        <div key={toast.id}
+          style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#0b0b18',border:`1px solid ${toast.color||'#ff6b35'}55`,borderRadius:12,padding:'11px 24px',color:toast.color||'#ff6b35',fontSize:12,fontWeight:700,zIndex:9999,boxShadow:'0 8px 30px rgba(0,0,0,.7)',whiteSpace:'nowrap',animation:'fadeUp .25s ease'}}>
+          {toast.msg}
+        </div>
+      )}
+
+      <main style={{maxWidth:1080,margin:'0 auto',padding:'28px 16px',position:'relative',zIndex:1}}>
+
+        {/* GALLERY */}
+        {page==='gallery'&&(
+          <div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18,flexWrap:'wrap',gap:12}}>
+              <div>
+                <h1 style={{fontFamily:"'Bebas Neue',cursive",fontSize:38,letterSpacing:3,margin:0}}>GALLERY</h1>
+                <p style={{color:'#252535',margin:'2px 0 0',fontSize:11}}>{drawings.length} artworks · pixel art</p>
+              </div>
+              <div style={{display:'flex',gap:7,flexWrap:'wrap',alignItems:'center'}}>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 search..."
+                  style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,padding:'7px 13px',color:'#ddd',fontSize:11,width:140}}/>
+                {[['popular','🔥','Top'],['new','⭐','New'],['liked','❤️','Likes']].map(([s,e,l])=>(
+                  <button key={s} onClick={()=>setSort(s)}
+                    style={{background:sort===s?'rgba(255,107,53,.12)':'rgba(255,255,255,.02)',border:'1px solid '+(sort===s?'rgba(255,107,53,.35)':'rgba(255,255,255,.06)'),borderRadius:8,padding:'7px 11px',color:sort===s?'#ff6b35':'#444',fontSize:11,display:'flex',alignItems:'center',gap:4,transition:'all .2s'}}>
+                    {e} {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {loading?(
+              <div style={{textAlign:'center',padding:80,color:'#111',fontFamily:"'Press Start 2P'",fontSize:10}}>LOADING...</div>
+            ):sorted.length===0?(
+              <div style={{textAlign:'center',padding:'70px 20px'}}>
+                <div style={{fontFamily:"'Press Start 2P'",fontSize:22,color:'#111',marginBottom:14}}>[]</div>
+                <p style={{fontSize:13,color:'#222'}}>{search?'Nothing found':'Gallery is empty. Be the first!'}</p>
+              </div>
+            ):(
+              <div style={{display:'grid',gridTemplateColumns:`repeat(auto-fill, minmax(${cardMinW}px, 1fr))`,gap:12}}>
+                {sorted.map(d=><DrawCard key={d.id} d={d} onView={setViewing} currentUserId={user.id} cardSize={galleryZoom} showDelete={isAdmin} onDelete={handleDelete}/>)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* DRAW */}
+        {page==='draw'&&(
+          <div>
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontFamily:"'Bebas Neue',cursive",fontSize:38,letterSpacing:3,margin:0}}>DRAW</h1>
+              <p style={{color:'#252535',margin:'2px 0 0',fontSize:11}}>Canvas {user.canvasSize||32}×{user.canvasSize||32} · {user.palette||'default'}</p>
+            </div>
+            <PixelCanvas
+              key={`c-${user.canvasSize||32}-${user.palette||'default'}`}
+              canvasSize={user.canvasSize||32}
+              activePalette={user.palette||'default'}
+              extraFrameColor={user.frame?SHOP_ITEMS.find(i=>i.id===user.frame)?.color:null}
+              onSave={data=>{setPendingImg(data);setPendingSize(user.canvasSize||32)}}/>
+          </div>
+        )}
+
+        {page==='jam'&&<ArtJam currentUser={user} showToast={showToast}/>}
+        {page==='shop'&&<Shop user={user} onBuy={handleBuy} onEquip={handleEquip}/>}
+        {page==='profile'&&<Profile user={user} drawings={drawings} onViewDrawing={setViewing} onDeleteDrawing={handleDelete} isAdmin={isAdmin}/>}
+        {page==='settings'&&<Settings user={user} setUser={setUser} showToast={showToast} onLogout={()=>setUser(null)}/>}
+      </main>
+
+      {pendingImg&&<PublishModal img={pendingImg} onPublish={handlePublish} onCancel={()=>setPendingImg(null)}/>}
+      {viewing&&<ViewModal d={viewing} onClose={()=>setViewing(null)} currentUser={user} onViewed={handleViewed} onLike={handleLike} onFavorite={handleFavorite}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
